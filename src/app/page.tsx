@@ -7,19 +7,15 @@ import { useRouter, usePathname } from 'next/navigation';
 
 export default function Home() {
   const router = useRouter();
-  const hostname = window?.location.origin;
-
   const [QRCode, setQRCode] = useState("https://fakeimg.pl/144x144/ebebeb/909090?text=QR+CODE");
   const [lastUpdateTime, setLastUpdateTime] = useState<any>(null);
   const [staffNo, setStaffNo] = useState("");
-
-  console.log("router.pathname ", usePathname());
-  console.log("router.asPath ", window.location.origin);
 
   //StaffNo Change, generate QR Code according to the staffNo, Scan then entry in
   const initQRCode = async (staffNo: string) => {
     if (!staffNo) return;
 
+    const hostname = window?.location.origin;
     const result = await fetch(`${hostname}/api/qrcode?staffNo=${staffNo}`);
 
     if (!result.ok) return null;
