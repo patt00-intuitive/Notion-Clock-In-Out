@@ -1,6 +1,39 @@
+"use client";
+
 import Image from 'next/image'
+import { useEffect, useState } from 'react';
+import moment from "moment";
 
 export default function Home() {
+  const [QRCode, setQRCode] = useState("https://fakeimg.pl/144x144/ebebeb/909090?text=QR+CODE");
+  const [lastUpdateTime, setLastUpdateTime] = useState<any>(null);
+  const [staffNo, setStaffNo] = useState("");
+
+  //StaffNo Change, generate QR Code according to the staffNo, Scan then entry in
+  const initQRCode = async (staffNo: string) => {
+    if (!staffNo) return;
+
+    const result = await fetch(`http://localhost:3000/api/qrcode?staffNo=${staffNo}`);
+
+    if (!result.ok) return null;
+
+    const data = await result.json();
+    console.log("result ", data.qrCode);
+    setQRCode(data.qrCode);
+  }
+
+  const handleImageError = () => {
+    //setQRCode();
+  };
+
+  useEffect(() => {
+    initQRCode(staffNo);
+  }, [staffNo]);
+
+  useEffect(() => {
+    setLastUpdateTime(new Date());
+  }, [QRCode])
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
@@ -107,6 +140,27 @@ export default function Home() {
             Instantly deploy your Next.js site to a shareable URL with Vercel.
           </p>
         </a>
+      </div>
+
+
+      {/* Clock-in-out session */}
+      <div className="my-8 max-w-lg grid lg:grid-cols-2 sm:grid-cols-1 gap-2.5">
+        <div className="grid-cols-1">
+          <div className="bg-white flex items-center justify-center p-4">
+            {QRCode && <img className="w-36 h-36" src={QRCode} alt="QR Code" onError={handleImageError} />}
+          </div>
+          {lastUpdateTime && <div className="text-xs text-gray-400 mt-2 w-full text-center">{moment(lastUpdateTime).format("YYYY-MM-DD HH:mm")}</div>}
+        </div>
+        <div className="grid-cols-1 ">
+          <div className='flex h-full items-center grow-0'>
+            <input
+              className="px-2 py-2 rounded-md"
+              type="text"
+              placeholder="MB0021"
+              onChange={(e) => setStaffNo(e.target.value)}
+            />
+          </div>
+        </div>
       </div>
     </main>
   )
