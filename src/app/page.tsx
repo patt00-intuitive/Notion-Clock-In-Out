@@ -3,17 +3,24 @@
 import Image from 'next/image'
 import { useEffect, useState } from 'react';
 import moment from "moment";
+import { useRouter, usePathname } from 'next/navigation';
 
 export default function Home() {
+  const router = useRouter();
+  const hostname = window?.location.origin;
+
   const [QRCode, setQRCode] = useState("https://fakeimg.pl/144x144/ebebeb/909090?text=QR+CODE");
   const [lastUpdateTime, setLastUpdateTime] = useState<any>(null);
   const [staffNo, setStaffNo] = useState("");
+
+  console.log("router.pathname ", usePathname());
+  console.log("router.asPath ", window.location.origin);
 
   //StaffNo Change, generate QR Code according to the staffNo, Scan then entry in
   const initQRCode = async (staffNo: string) => {
     if (!staffNo) return;
 
-    const result = await fetch(`http://localhost:3000/api/qrcode?staffNo=${staffNo}`);
+    const result = await fetch(`${hostname}/api/qrcode?staffNo=${staffNo}`);
 
     if (!result.ok) return null;
 
@@ -36,6 +43,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
+      {/*
       <div className="z-10 w-full max-w-5xl items-center justify-between font-mono text-sm lg:flex">
         <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
           Get started by editing&nbsp;
@@ -141,7 +149,7 @@ export default function Home() {
           </p>
         </a>
       </div>
-
+      */}
 
       {/* Clock-in-out session */}
       <div className="my-8 max-w-lg grid lg:grid-cols-2 sm:grid-cols-1 gap-2.5">
@@ -153,12 +161,15 @@ export default function Home() {
         </div>
         <div className="grid-cols-1 ">
           <div className='flex h-full items-center grow-0'>
-            <input
-              className="px-2 py-2 rounded-md"
-              type="text"
-              placeholder="MB0021"
-              onChange={(e) => setStaffNo(e.target.value)}
-            />
+            <div>
+              <input
+                className="px-2 py-2 rounded-md"
+                type="text"
+                placeholder="MB0021"
+                onChange={(e) => setStaffNo(e.target.value)}
+              />
+              <div className="text-xs text-gray-400 mt-2">Staff No</div>
+            </div>
           </div>
         </div>
       </div>

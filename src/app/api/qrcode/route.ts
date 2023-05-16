@@ -12,8 +12,10 @@ export async function GET(request: NextRequest) {
     // Set the expiry time (1 minute from the current time)
     const expiryTime = moment().add(1, 'minute');
 
+    const hostname = `${request.headers.get("referer")}`;
+    console.log("hostname ", hostname);
     // Generate the QR code with the staff number and expiry time as data
-    const qrData = JSON.stringify({ url: `http://localhost:3000/api/vendor?staffNo=${staffNo}`, expiryTime });
+    const qrData = JSON.stringify({ url: `${hostname}/api/vendor?staffNo=${staffNo}`, expiryTime });
 
     //console.log("qrData", qrData);
 
@@ -21,7 +23,5 @@ export async function GET(request: NextRequest) {
     // @ts-ignore
     const result = await generate(qrData);
 
-    console.log("here 2");
-    console.log(result);
     return NextResponse.json({ qrCode: result });
 }
