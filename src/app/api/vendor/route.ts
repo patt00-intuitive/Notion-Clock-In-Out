@@ -4,7 +4,7 @@ import { Client } from "@notionhq/client";
 const notion = new Client({ auth: process.env.NOTION_KEY });
 const databaseId = process.env.NOTION_DATABASE_ID || "";
 
-async function addItem(text: string, staffNo: string, staffName: string): Promise<void> {
+async function addItem(text: string, staffNo: any, staffName: any): Promise<void> {
     try {
         const response = await notion.pages.create({
             parent: { database_id: databaseId },
@@ -55,8 +55,8 @@ async function addItem(text: string, staffNo: string, staffName: string): Promis
 export async function GET(request: NextRequest) {
     const staffNo = request.nextUrl.searchParams.get('staffNo');
     const staffName = request.nextUrl.searchParams.get('staffName');
-    console.log("staffNo", staffNo );
-    console.log("staffName", staffName );
+    console.log("staffNo", staffNo);
+    console.log("staffName", staffName);
     addItem((new Date()).getTime().toString(), staffNo, staffName);
     return NextResponse.json({ name: "Hello World" });
 }
