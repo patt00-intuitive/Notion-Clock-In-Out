@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import { useEffect, useState } from 'react';
 import moment from "moment";
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 
 
 const placeholderSrc = "https://fakeimg.pl/144x144/ebebeb/909090?text=QR+CODE";
@@ -84,7 +84,7 @@ export default function Home() {
     setLastUpdateTime(new Date());
   }, [QRCode])
 
-  const handleImageError = () => {}
+  const handleImageError = () => { }
 
   console.log("QRCode ", QRCode);
   return (
@@ -224,6 +224,14 @@ export default function Home() {
               <svg className="w-6 h-6 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
+            </div>
+          </div>
+        }
+
+        {useSearchParams().get("success") && 
+          <div className="grid-cols-1">
+            <div className="w-full flex items-center justify-center">
+              <div className="px-2 py-2 rounded-md bg-sky-500 text-gray-100 text-xs uppercase font-semibold"> Check in success </div>
             </div>
           </div>
         }
