@@ -50,6 +50,8 @@ async function addItem(text: string, staffNo: any, staffName: any) {
         return response;
     } catch (error: any) {
         console.error(error.body);
+
+        return null;
     }
 }
 
@@ -64,7 +66,7 @@ export async function GET(request: NextRequest) {
     //console.log(request.headers);
     //console.log("hostname ", hostname);
     //console.log("hostname", new URL('/', `https://${hostname}`));
-    //const result = await addItem((new Date()).getTime().toString(), staffNo, staffName);
+    const result = await addItem((new Date()).getTime().toString(), staffNo, staffName);
     //return NextResponse.json({ result: '' });
-    return NextResponse.redirect(new URL('/?success=1', hostname));
+    return NextResponse.redirect(new URL(result ? '/?success=1' : '/', hostname));
 }
