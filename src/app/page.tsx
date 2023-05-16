@@ -5,38 +5,88 @@ import { useEffect, useState } from 'react';
 import moment from "moment";
 import { useRouter, usePathname } from 'next/navigation';
 
+
+const placeholderSrc = "https://fakeimg.pl/144x144/ebebeb/909090?text=QR+CODE";
+
 export default function Home() {
-  const router = useRouter();
-  const [QRCode, setQRCode] = useState("https://fakeimg.pl/144x144/ebebeb/909090?text=QR+CODE");
+  const [QRCode, setQRCode] = useState(placeholderSrc);
   const [lastUpdateTime, setLastUpdateTime] = useState<any>(null);
-  const [staffNo, setStaffNo] = useState("");
+  const [staff, setStaff] = useState({ name: "", no: "" })
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
 
   //StaffNo Change, generate QR Code according to the staffNo, Scan then entry in
-  const initQRCode = async (staffNo: string) => {
-    if (!staffNo) return;
+  const initQRCode = async (staffNo: string, staffName: string) => {
+    try {
+      if (!(staffNo && staffName)) return;
 
-    const hostname = window?.location.origin;
-    const result = await fetch(`${hostname}/api/qrcode?staffNo=${staffNo}`);
+      setIsLoading(true);
 
-    if (!result.ok) return null;
+      const hostname = window?.location.origin;
+      const result = await fetch(`${hostname}/api/qrcode?staffNo=${staffNo}&staffName=${staffName}`);
 
-    const data = await result.json();
-    console.log("result ", data.qrCode);
-    setQRCode(data.qrCode);
+      if (!result.ok) return null;
+
+      const data = await result.json();
+      console.log("result ", data.qrCode);
+      setQRCode(data.qrCode);
+    } finally {
+      setTimeout(() => setIsLoading(false), 700);
+    }
   }
 
-  const handleImageError = () => {
-    //setQRCode();
-  };
+  const getStaffNo = async (staffNo: string) => {
+    if (!staffNo) return;
+    let data = null;
+
+    try {
+      setIsLoading(true);
+      const hostname = window?.location.origin;
+      const result = await fetch(`${hostname}/api/staff?staffNo=${staffNo}`);
+
+      if (!result.ok) return null;
+      data = await result.json();
+      console.log("result ", data);
+
+      if (data.staff) setStaff({ ...staff, name: data.staff.name });
+      else setQRCode(placeholderSrc);
+
+    } finally {
+      if (!data.staff) setTimeout(() => setIsLoading(false), 700);
+    }
+  }
 
   useEffect(() => {
-    initQRCode(staffNo);
-  }, [staffNo]);
+    setQRCode(placeholderSrc);
+
+    // Clear previous timeout if exists
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+
+    // Set new timeout for 1 second
+    const newTimeoutId = setTimeout(() => {
+      // Make the request here using the latest input value
+      getStaffNo(staff.no);
+    }, 300);
+
+    // Store the new timeout ID
+    setTimeoutId(newTimeoutId);
+
+  }, [staff.no]);
+
+  useEffect(() => {
+    initQRCode(staff.no, staff.name);
+  }, [staff.name]);
 
   useEffect(() => {
     setLastUpdateTime(new Date());
   }, [QRCode])
 
+  const handleImageError = () => {}
+
+  console.log("QRCode ", QRCode);
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       {/*
@@ -148,26 +198,35 @@ export default function Home() {
       */}
 
       {/* Clock-in-out session */}
-      <div className="my-8 max-w-lg grid lg:grid-cols-2 sm:grid-cols-1 gap-2.5">
+      <div className="my-8 max-w-lg grid lg:grid-cols-1 sm:grid-cols-1 gap-8">
         <div className="grid-cols-1">
-          <div className="bg-white flex items-center justify-center p-4">
+          <div className={`bg-white rounded-md flex items-center justify-center p-4 ${isLoading ? 'opacity-50' : ''}`}>
             {QRCode && <img className="w-36 h-36" src={QRCode} alt="QR Code" onError={handleImageError} />}
           </div>
-          {lastUpdateTime && <div className="text-xs text-gray-400 mt-2 w-full text-center">{moment(lastUpdateTime).format("YYYY-MM-DD HH:mm")}</div>}
+          {lastUpdateTime && <div className="text-xs text-gray-400 mt-1 w-full text-center">last update time: {moment(lastUpdateTime).format("YYYY-MM-DD HH:mm")}</div>}
         </div>
-        <div className="grid-cols-1 ">
+        <div className="grid-cols-1">
           <div className='flex h-full items-center grow-0'>
             <div>
               <input
-                className="px-2 py-2 rounded-md"
+                className="px-2 py-2 rounded-md text-center"
                 type="text"
                 placeholder="MB0021"
-                onChange={(e) => setStaffNo(e.target.value)}
+                onChange={(e) => setStaff({ ...staff, no: e.target.value })}
               />
-              <div className="text-xs text-gray-400 mt-2">Staff No</div>
+              <div className="text-xs text-gray-400 mt-1 w-full text-center">Staff No</div>
             </div>
           </div>
         </div>
+        {isLoading &&
+          <div className="grid-cols-1">
+            <div className="w-full flex items-center justify-center">
+              <svg className="w-6 h-6 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+          </div>
+        }
       </div>
     </main>
   )

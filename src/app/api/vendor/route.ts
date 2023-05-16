@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { Client } from "@notionhq/client";
 
 const notion = new Client({ auth: process.env.NOTION_KEY });
@@ -52,7 +52,11 @@ async function addItem(text: string, staffNo: string, staffName: string): Promis
 }
 
 
-export async function GET(request: Request) {
-    addItem((new Date()).getTime().toString(), "MB12233", "Jenie W")
+export async function GET(request: NextRequest) {
+    const staffNo = request.nextUrl.searchParams.get('staffNo');
+    const staffName = request.nextUrl.searchParams.get('staffName');
+    console.log("staffNo", staffNo );
+    console.log("staffName", staffName );
+    addItem((new Date()).getTime().toString(), staffNo, staffName);
     return NextResponse.json({ name: "Hello World" });
 }
