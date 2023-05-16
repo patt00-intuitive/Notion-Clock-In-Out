@@ -6,7 +6,9 @@ const notion = new Client({ auth: process.env.NOTION_KEY });
 const readData = async (staffNo: string | null) => {
     const databaseId = process.env.NOTION_STAFF_DATABASE_ID;
 
-    if (!staffNo) return null;
+    if (!staffNo) return null;  
+
+    console.log("databaseId ", databaseId);
 
     const response = await notion.databases.query({
         database_id: databaseId,
@@ -19,6 +21,9 @@ const readData = async (staffNo: string | null) => {
     });
 
     let staff = { "name": "", "no": "" }
+
+    console.log("staffNo ", staffNo);
+    console.log("HELLO");
 
     if (response.results && response.results.length == 1) {
         response.results.forEach((r: any) => {
